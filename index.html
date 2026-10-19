@@ -33,65 +33,16 @@
     overflow: hidden;
   }
 
-  /* ---------- Marco de teléfono (escritorio) ---------- */
-  .stage {
-    width: 100%; height: 100%;
-    display: grid; place-items: center;
-    background: radial-gradient(1200px 700px at 50% 30%, #25252b 0%, #0e0e10 70%);
-  }
+  /* ---------- Página (sin marco de teléfono) ---------- */
+  body { background: var(--splash-bg); transition: background .6s ease; }
+  body.ready { background: linear-gradient(180deg, #47424e 0%, var(--home-bg) 40%, #37333d 100%); }
+  .stage { width: 100%; height: 100%; display: flex; justify-content: center; }
   .device {
-    --w: min(400px, calc((100dvh - 40px) * var(--ratio)), calc(100vw - 32px));
+    --w: min(100vw, 480px);             /* límite de ancho en pantallas grandes */
     --u: calc(var(--w) / 390);          /* unidad de escala: 1u = 1px a 390px de ancho */
-    width: var(--w);
-    aspect-ratio: 390 / 844;
-    position: relative;
-    border-radius: calc(54 * var(--u));
-    background: #000;
-    padding: calc(10 * var(--u));
-    box-shadow:
-      0 0 0 calc(2 * var(--u)) #3a3a40,
-      0 0 0 calc(5 * var(--u)) #17171a,
-      0 40px 90px rgba(0,0,0,.65);
+    width: var(--w); height: 100dvh; position: relative;
   }
-  .screen {
-    position: relative; width: 100%; height: 100%;
-    border-radius: calc(44 * var(--u));
-    overflow: hidden;
-    background: var(--splash-bg);
-    isolation: isolate;
-  }
-  .island {
-    position: absolute; z-index: 50; top: calc(11 * var(--u)); left: 50%;
-    width: calc(112 * var(--u)); height: calc(32 * var(--u));
-    transform: translateX(-50%);
-    background: #000; border-radius: 999px; pointer-events: none;
-  }
-  .statusbar {
-    position: absolute; z-index: 49; top: 0; left: 0; right: 0;
-    height: calc(54 * var(--u));
-    padding: calc(16 * var(--u)) calc(30 * var(--u)) 0;
-    display: flex; justify-content: space-between; align-items: flex-start;
-    font-size: calc(15 * var(--u)); font-weight: 800; letter-spacing: .01em;
-    color: #fff; pointer-events: none;
-  }
-  .statusbar .sb-right { display: flex; gap: calc(6 * var(--u)); align-items: center; }
-  .sb-batt {
-    font-size: calc(10 * var(--u)); font-weight: 800; color: #222;
-    background: rgba(255,255,255,.88); border-radius: calc(6 * var(--u));
-    padding: calc(1.5 * var(--u)) calc(6 * var(--u));
-  }
-
-  /* En un teléfono real: pantalla completa, sin marco */
-  @media (max-width: 520px), (max-height: 560px) {
-    .stage { background: var(--splash-bg); }
-    .device {
-      --w: 100vw; --u: calc(100vw / 390);
-      width: 100vw; height: 100dvh; aspect-ratio: auto;
-      border-radius: 0; padding: 0; box-shadow: none; background: none;
-    }
-    .screen { border-radius: 0; }
-    .island, .statusbar { display: none; }
-  }
+  .screen { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--splash-bg); isolation: isolate; }
 
   /* ---------- Splash ---------- */
   .splash {
@@ -166,7 +117,7 @@
     position: relative;
   }
   .scroll::-webkit-scrollbar { display: none; }
-  @media (max-width: 520px), (max-height: 560px) {
+  @media all {
     .scroll { padding-top: calc(env(safe-area-inset-top, 0px) + 16 * var(--u)); }
   }
 
@@ -245,10 +196,10 @@
   }
   .qr svg { width: calc(56 * var(--u)); height: calc(56 * var(--u)); stroke: #e9e6ee; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
   .qr:active { transform: scale(.94); }
-  @media (max-width: 520px), (max-height: 560px) { .qr { bottom: calc(176 * var(--u) + env(safe-area-inset-bottom, 0px)); } }
+  @media all { .qr { bottom: calc(176 * var(--u) + env(safe-area-inset-bottom, 0px)); } }
 
   .nav { flex: none; display: grid; grid-template-columns: repeat(5, 1fr); height: calc(155 * var(--u)); background: #3b3741; }
-  @media (max-width: 520px), (max-height: 560px) { .nav { height: calc(155 * var(--u) + env(safe-area-inset-bottom, 0px)); padding-bottom: env(safe-area-inset-bottom, 0px); } }
+  @media all { .nav { height: calc(155 * var(--u) + env(safe-area-inset-bottom, 0px)); padding-bottom: env(safe-area-inset-bottom, 0px); } }
   .nav button { background: none; border: 0; font: 600 calc(19 * var(--u))/1.2 var(--font); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: calc(10 * var(--u)); cursor: pointer; padding: 0 calc(2 * var(--u)); color: var(--text); }
   .nav button svg { width: calc(56 * var(--u)); height: calc(56 * var(--u)); stroke: #e9e6ee; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
   .nav button.active { background: var(--yellow); color: #9b8a16; }
@@ -263,14 +214,6 @@
 <div class="stage">
   <div class="device">
     <div class="screen" id="screen">
-      <div class="island"></div>
-      <div class="statusbar" id="statusbar" aria-hidden="true">
-        <span id="clock">12:46</span>
-        <span class="sb-right">
-          <svg width="18" height="12" viewBox="0 0 18 12" fill="#fff"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5" width="3" height="7" rx="1"/><rect x="10" y="2.5" width="3" height="9.5" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
-          <span class="sb-batt">75</span>
-        </span>
-      </div>
 
       <!-- ===== HOME ===== -->
       <main class="home" id="home">
@@ -364,9 +307,7 @@
   var home = document.getElementById('home');
   var pct = document.getElementById('pct');
 
-  /* Hora real en la barra de estado y saludo según la hora */
-  var now = new Date(), h = now.getHours();
-  document.getElementById('clock').textContent = (h % 12 || 12) + ':' + String(now.getMinutes()).padStart(2, '0');
+  var h = new Date().getHours();
   document.getElementById('hello').textContent = h < 12 ? 'Buenos días' : h < 19 ? 'Buenas tardes' : 'Buenas noches';
 
   /* Contador de carga: arranca lento, acelera y se asienta al final */
@@ -381,7 +322,7 @@
   }
   function finish() {
     setTimeout(function () {
-      home.classList.add('in');
+      home.classList.add('in'); document.body.classList.add('ready');
       splash.classList.add('out');
       drawArc();
       setTimeout(function () { splash.style.display = 'none'; }, 700);
