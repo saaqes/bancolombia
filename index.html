@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#232420">
+<title>Bancolombia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --font: "Nunito Sans", "Avenir Next", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+    --splash-bg: #232420;
+    --home-bg: #3d3943;
+    --card-bg: #48444f;
+    --tile-bg: #4a4651;
+    --text: #f3f1f5;
+    --muted: #cfcbd4;
+    --yellow: #fdda24;
+    --cyan: #4bc6e2;
+    --orange: #f2643a;
+    --ratio: 0.462; /* ancho / alto del teléfono */
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body {
+    font-family: var(--font);
+    background: #0e0e10;
+    color: var(--text);
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+  }
+
+  /* ---------- Marco de teléfono (escritorio) ---------- */
+  .stage {
+    width: 100%; height: 100%;
+    display: grid; place-items: center;
+    background: radial-gradient(1200px 700px at 50% 30%, #25252b 0%, #0e0e10 70%);
+  }
+  .device {
+    --w: min(400px, calc((100dvh - 40px) * var(--ratio)), calc(100vw - 32px));
+    --u: calc(var(--w) / 390);          /* unidad de escala: 1u = 1px a 390px de ancho */
+    width: var(--w);
+    aspect-ratio: 390 / 844;
+    position: relative;
+    border-radius: calc(54 * var(--u));
+    background: #000;
+    padding: calc(10 * var(--u));
+    box-shadow:
+      0 0 0 calc(2 * var(--u)) #3a3a40,
+      0 0 0 calc(5 * var(--u)) #17171a,
+      0 40px 90px rgba(0,0,0,.65);
+  }
+  .screen {
+    position: relative; width: 100%; height: 100%;
+    border-radius: calc(44 * var(--u));
+    overflow: hidden;
+    background: var(--splash-bg);
+    isolation: isolate;
+  }
+  .island {
+    position: absolute; z-index: 50; top: calc(11 * var(--u)); left: 50%;
+    width: calc(112 * var(--u)); height: calc(32 * var(--u));
+    transform: translateX(-50%);
+    background: #000; border-radius: 999px; pointer-events: none;
+  }
+  .statusbar {
+    position: absolute; z-index: 49; top: 0; left: 0; right: 0;
+    height: calc(54 * var(--u));
+    padding: calc(16 * var(--u)) calc(30 * var(--u)) 0;
+    display: flex; justify-content: space-between; align-items: flex-start;
+    font-size: calc(15 * var(--u)); font-weight: 800; letter-spacing: .01em;
+    color: #fff; pointer-events: none;
+  }
+  .statusbar .sb-right { display: flex; gap: calc(6 * var(--u)); align-items: center; }
+  .sb-batt {
+    font-size: calc(10 * var(--u)); font-weight: 800; color: #222;
+    background: rgba(255,255,255,.88); border-radius: calc(6 * var(--u));
+    padding: calc(1.5 * var(--u)) calc(6 * var(--u));
+  }
+
+  /* En un teléfono real: pantalla completa, sin marco */
+  @media (max-width: 520px), (max-height: 560px) {
+    .stage { background: var(--splash-bg); }
+    .device {
+      --w: 100vw; --u: calc(100vw / 390);
+      width: 100vw; height: 100dvh; aspect-ratio: auto;
+      border-radius: 0; padding: 0; box-shadow: none; background: none;
+    }
+    .screen { border-radius: 0; }
+    .island, .statusbar { display: none; }
+  }
+
+  /* ---------- Splash ---------- */
+  .splash {
+    position: absolute; inset: 0; z-index: 30;
+    background: #fdfdfb;
+    animation: splashBg .5s .25s ease forwards;
+    transition: opacity .6s ease, transform .6s ease, filter .6s ease;
+    overflow: hidden;
+  }
+  @keyframes splashBg { to { background: var(--splash-bg); } }
+  .splash.out { opacity: 0; transform: scale(1.08); filter: blur(6px); pointer-events: none; }
+
+  .logo {
+    display: inline-flex; align-items: center; gap: .1em;
+    font-weight: 800; letter-spacing: -.035em; line-height: 1; color: #fff;
+  }
+  .logo svg { height: 1em; width: 1.02em; display: block; fill: currentColor; }
+  .splash .logo {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    font-size: calc(32 * var(--u));
+    opacity: 0; animation: fadeIn .5s .35s ease forwards;
+  }
+  @keyframes fadeIn { to { opacity: 1; } }
+
+  .pct {
+    position: absolute; left: 0; right: 0; bottom: calc(46 * var(--u));
+    text-align: center; font-size: calc(13 * var(--u)); font-weight: 700; color: #fff;
+    opacity: 0; animation: fadeIn .3s .45s ease forwards;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .swoosh { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .swoosh path { fill: none; stroke-linecap: round; }
+  .swoosh .dash { stroke-dasharray: 0 400; stroke-dashoffset: 0; opacity: 0; }
+
+  /* cian: punto apagado arriba-izquierda que se enciende y se estira en diagonal */
+  .s-cyan   { animation: cyan 1.5s .85s cubic-bezier(.45,.05,.35,1) forwards; }
+  /* naranja: esquina superior izquierda, detrás del cian */
+  .s-orange1{ animation: grow 1.1s 1.45s cubic-bezier(.45,.05,.35,1) forwards; --len: 62; }
+  /* amarillo: entra por el borde derecho y baja en curva */
+  .s-yellow { animation: grow 1.3s 1.60s cubic-bezier(.4,.05,.3,1) forwards; --len: 96; }
+  .s-orange2{ animation: grow .6s 2.15s ease-out forwards; --len: 100; }
+  .s-dot    { animation: pop .3s 2.30s ease-out forwards; }
+
+  @keyframes cyan {
+    0%   { opacity: 1; stroke: #2e3c43; stroke-dasharray: 0 400; }
+    28%  { opacity: 1; stroke: #2e3c43; stroke-dasharray: 0 400; }
+    45%  { opacity: 1; stroke: var(--cyan); stroke-dasharray: 0 400; }
+    60%  { opacity: 1; stroke-dasharray: 22 400; stroke-dashoffset: 0; }
+    100% { opacity: 1; stroke: var(--cyan); stroke-dasharray: 88 400; stroke-dashoffset: -6; }
+  }
+  @keyframes grow {
+    0%   { opacity: 1; stroke-dasharray: 0 400; }
+    100% { opacity: 1; stroke-dasharray: var(--len) 400; }
+  }
+  @keyframes pop { from { opacity: 0; } to { opacity: 1; } }
+
+  /* ---------- Home ---------- */
+  .home {
+    --u: calc(var(--w) / 762);            /* la referencia está medida a 762 px de ancho */
+    position: absolute; inset: 0; z-index: 10;
+    background: linear-gradient(180deg, #47424e 0%, var(--home-bg) 40%, #37333d 100%);
+    display: flex; flex-direction: column;
+    opacity: 0; transform: scale(.96);
+    transition: opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1);
+  }
+  .home.in { opacity: 1; transform: none; }
+  .home button { font-family: var(--font); color: inherit; }
+  .scroll {
+    flex: 1; overflow-y: auto; overflow-x: hidden; scrollbar-width: none;
+    padding: calc(73 * var(--u)) 0 calc(40 * var(--u));
+    position: relative;
+  }
+  .scroll::-webkit-scrollbar { display: none; }
+  @media (max-width: 520px), (max-height: 560px) {
+    .scroll { padding-top: calc(env(safe-area-inset-top, 0px) + 16 * var(--u)); }
+  }
+
+  .top { display: flex; align-items: center; justify-content: space-between; padding: 0 calc(30 * var(--u)) 0 calc(34 * var(--u)); height: calc(90 * var(--u)); }
+  .top .logo { font-size: calc(50 * var(--u)); }
+  .top .icons { display: flex; gap: calc(34 * var(--u)); }
+  .ico { width: calc(54 * var(--u)); height: calc(54 * var(--u)); stroke: #fff; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+  .hello-row { position: relative; padding: calc(34 * var(--u)) calc(28 * var(--u)) 0; height: calc(34 * var(--u) + 56 * var(--u)); }
+  .hello { font-size: calc(43 * var(--u)); line-height: calc(56 * var(--u)); font-weight: 600; letter-spacing: -.01em; white-space: nowrap; }
+
+  .login {
+    position: absolute; right: calc(52 * var(--u)); top: calc(107 * var(--u)); z-index: 3;
+    display: flex; align-items: center; justify-content: space-between; gap: calc(10 * var(--u));
+    width: calc(237 * var(--u)); height: calc(55 * var(--u));
+    padding: 0 calc(16 * var(--u)) 0 calc(28 * var(--u));
+    border-radius: 999px; border: 0;
+    background: rgba(246,243,248,.9); color: #8e8a93 !important;
+    font: 600 calc(21 * var(--u)) var(--font); cursor: pointer;
+  }
+  .login svg { width: calc(30 * var(--u)); height: calc(30 * var(--u)); stroke: #8e8a93; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .login:active { transform: scale(.98); }
+
+  .arc { position: absolute; right: 0; top: calc(99 * var(--u)); width: calc(242 * var(--u)); height: calc(190 * var(--u)); pointer-events: none; z-index: 2; overflow: visible; }
+  .arc path { fill: none; stroke-linecap: round; }
+
+  .dyn {
+    margin: calc(75 * var(--u)) calc(28 * var(--u)) 0;
+    width: calc(327 * var(--u)); height: calc(100 * var(--u));
+    display: flex; align-items: center; gap: calc(22 * var(--u));
+    padding: 0 calc(20 * var(--u)) 0 calc(14 * var(--u));
+    background: rgba(86,80,95,.55); border: 1px solid rgba(255,255,255,.07);
+    border-radius: 999px; position: relative; cursor: pointer; text-align: left;
+  }
+  .dyn .ring { position: relative; width: calc(66 * var(--u)); height: calc(66 * var(--u)); flex: none; border-radius: 50%; display: grid; place-items: center; }
+  .dyn .ring svg.timer { position: absolute; inset: 0; transform: rotate(-90deg); }
+  .dyn .ring svg.lock { width: calc(30 * var(--u)); height: calc(30 * var(--u)); stroke: #e9e6ee; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+  .dyn .lbl { display: block; font-size: calc(20 * var(--u)); color: var(--muted); font-weight: 600; }
+  .dyn .code { display: block; font-size: calc(30 * var(--u)); font-weight: 800; letter-spacing: .02em; font-variant-numeric: tabular-nums; margin-top: calc(4 * var(--u)); }
+  .dyn .chev { margin-left: auto; width: calc(24 * var(--u)); height: calc(24 * var(--u)); stroke: #e9e6ee; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  h2.sec { font-size: calc(26 * var(--u)); font-weight: 600; margin: calc(48 * var(--u)) calc(28 * var(--u)) calc(30 * var(--u)); letter-spacing: -.005em; }
+  .dyn + h2.sec { margin-top: calc(66 * var(--u)); }
+
+  .tx-row { display: flex; gap: calc(13 * var(--u)); overflow-x: auto; padding: 0 calc(28 * var(--u)); scrollbar-width: none; scroll-snap-type: x proximity; }
+  .tx-row::-webkit-scrollbar { display: none; }
+  .tx {
+    flex: none; width: calc(150 * var(--u)); height: calc(147 * var(--u)); scroll-snap-align: start;
+    background: var(--tile-bg); border-radius: calc(20 * var(--u)); border: 0; color: var(--text);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: calc(14 * var(--u));
+    font: 600 calc(19 * var(--u))/1.2 var(--font); text-align: center; cursor: pointer;
+    transition: transform .15s ease, background .15s ease;
+  }
+  .tx:active { transform: scale(.96); background: #55505d; }
+  .tx svg { width: calc(50 * var(--u)); height: calc(50 * var(--u)); stroke: #e9e6ee; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .tx .bre { font-size: calc(26 * var(--u)); font-weight: 800; letter-spacing: -.06em; height: calc(50 * var(--u)); display: grid; place-items: center; }
+
+  .grid-card {
+    margin: 0 calc(27 * var(--u)); padding: calc(26 * var(--u)) calc(8 * var(--u)) calc(34 * var(--u));
+    background: rgba(255,255,255,.05); border-radius: calc(30 * var(--u));
+    display: grid; grid-template-columns: repeat(3, 1fr); row-gap: calc(30 * var(--u));
+  }
+  .opt { display: flex; flex-direction: column; align-items: center; gap: calc(12 * var(--u)); background: none; border: 0; cursor: pointer; font: 600 calc(19 * var(--u))/1.2 var(--font); text-align: center; }
+  .opt .dot { width: calc(110 * var(--u)); height: calc(110 * var(--u)); border-radius: 50%; display: grid; place-items: center; transition: transform .15s ease; }
+  .opt:active .dot { transform: scale(.94); }
+  .opt .dot svg { width: calc(54 * var(--u)); height: calc(54 * var(--u)); stroke: rgba(255,255,255,.78); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .c1 { background: #f2b4d6; } .c2 { background: #b98be8; } .c3 { background: #72d3b2; }
+  .c4 { background: #f4cf4d; } .c5 { background: #f39a6c; } .c6 { background: #9fd0ef; }
+
+  .qr {
+    position: absolute; right: calc(22 * var(--u)); bottom: calc(176 * var(--u)); z-index: 6;
+    width: calc(110 * var(--u)); height: calc(110 * var(--u)); border-radius: 50%;
+    background: rgba(58,54,65,.92); border: calc(6 * var(--u)) solid var(--yellow);
+    display: grid; place-items: center; cursor: pointer; box-shadow: 0 6px 18px rgba(0,0,0,.35);
+    transition: transform .15s ease;
+  }
+  .qr svg { width: calc(56 * var(--u)); height: calc(56 * var(--u)); stroke: #e9e6ee; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .qr:active { transform: scale(.94); }
+  @media (max-width: 520px), (max-height: 560px) { .qr { bottom: calc(176 * var(--u) + env(safe-area-inset-bottom, 0px)); } }
+
+  .nav { flex: none; display: grid; grid-template-columns: repeat(5, 1fr); height: calc(155 * var(--u)); background: #3b3741; }
+  @media (max-width: 520px), (max-height: 560px) { .nav { height: calc(155 * var(--u) + env(safe-area-inset-bottom, 0px)); padding-bottom: env(safe-area-inset-bottom, 0px); } }
+  .nav button { background: none; border: 0; font: 600 calc(19 * var(--u))/1.2 var(--font); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: calc(10 * var(--u)); cursor: pointer; padding: 0 calc(2 * var(--u)); color: var(--text); }
+  .nav button svg { width: calc(56 * var(--u)); height: calc(56 * var(--u)); stroke: #e9e6ee; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .nav button.active { background: var(--yellow); color: #9b8a16; }
+  .nav button.active svg { stroke: #9b8a16; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .splash, .home { transition-duration: .01s; }
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="device">
+    <div class="screen" id="screen">
+      <div class="island"></div>
+      <div class="statusbar" id="statusbar" aria-hidden="true">
+        <span id="clock">12:46</span>
+        <span class="sb-right">
+          <svg width="18" height="12" viewBox="0 0 18 12" fill="#fff"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5" width="3" height="7" rx="1"/><rect x="10" y="2.5" width="3" height="9.5" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
+          <span class="sb-batt">75</span>
+        </span>
+      </div>
+
+      <!-- ===== HOME ===== -->
+      <main class="home" id="home">
+        <div class="scroll">
+          <header class="top">
+            <span class="logo"><svg viewBox="0 0 28 28" aria-hidden="true"><path d="M3 5.5c0-1.1.9-2 2-2h18.3c1.2 0 2 1 1.6 2.1l-.4 1c-.3.8-1 1.3-1.9 1.3H5c-1.100 0-2-.9-2-2zM3 12.2c0-1.1.9-2 2-2h18.3c1.2 0 2 1 1.600 2.100l-.4 1c-.3.8-1 1.300-1.900 1.300H5c-1.100 0-2-.9-2-2zM3 18.900c0-1.100.9-2 2-2h18.300c1.200 0 2 1 1.600 2.100l-.4 1c-.3.800-1 1.300-1.900 1.300H5c-1.100 0-2-.9-2-2z" transform="translate(0 1.5) skewX(-8)"/></svg>Bancolombia</span>
+            <span class="icons">
+              <svg class="ico" viewBox="0 0 34 34"><path d="M17 5.500a8 8 0 0 0-8 8v4.200l-2.200 4.300h20.400L25 17.700v-4.200a8 8 0 0 0-8-8z"/><path d="M14 26a3.200 3.200 0 0 0 6 0"/></svg>
+              <svg class="ico" viewBox="0 0 34 34"><circle cx="17" cy="17" r="12"/><path d="M13.300 13.600a3.800 3.800 0 1 1 5.300 3.500c-1 .5-1.600 1.200-1.600 2.400"/><circle cx="17" cy="23.600" r=".6" fill="#fff"/></svg>
+              <svg class="ico" viewBox="0 0 34 34"><circle cx="17" cy="17" r="12"/><circle cx="17" cy="17" r="5.500"/><path d="M17 5v6M5 17h6"/></svg>
+            </span>
+          </header>
+
+          <div class="hello-row">
+            <h1 class="hello" id="hello">Buenos días</h1>
+            <button class="login" type="button">Iniciar sesión
+              <svg viewBox="0 0 24 24"><path d="M9 4h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H9"/><path d="M4 12h10M10.500 8l4 4-4 4"/></svg>
+            </button>
+            <svg class="arc" viewBox="0 0 242 190" aria-hidden="true">
+              <path id="arcC" d="M8 171 C 40 170, 62 166, 80 158" stroke="#4bc6e2" stroke-width="20" pathLength="100"/>
+              <path id="arcY" d="M42 152 C 118 138, 200 90, 250 -4" stroke="#fdda24" stroke-width="24" pathLength="100"/>
+              <path id="arcO" d="M128 134 C 152 124, 176 110, 192 94" stroke="#f2643a" stroke-width="32" pathLength="100"/>
+            </svg>
+          </div>
+
+          <button class="dyn" type="button" id="dyn" aria-label="Clave dinámica">
+            <span class="ring">
+              <svg class="timer" viewBox="0 0 52 52"><circle cx="26" cy="26" r="24" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="2"/><circle id="timer" cx="26" cy="26" r="24" fill="none" stroke="#fdda24" stroke-width="2.600" stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="0"/></svg>
+              <svg class="lock" viewBox="0 0 24 24"><rect x="5.500" y="10.500" width="13" height="9.500" rx="2.500"/><path d="M8.500 10.500V8a3.500 3.500 0 0 1 7 0v2.500"/><circle cx="12" cy="15.200" r=".7" fill="#e9e6ee"/></svg>
+            </span>
+            <span>
+              <span class="lbl" style="display:block">Clave Dinámica</span>
+              <span class="code" id="code">780 525</span>
+            </span>
+            <svg class="chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+          </button>
+
+          <h2 class="sec">Transacciones principales</h2>
+          <div class="tx-row">
+            <button class="tx" type="button"><svg viewBox="0 0 40 40"><path d="M9 6h13l7 7v7"/><path d="M9 6v26h10"/><circle cx="27" cy="29" r="6"/><path d="M27 26.500v5M25.300 27.800c.4-.6 3.400-.6 3.400.6 0 1.500-3.400.8-3.400 2.200 0 1 3 1.100 3.400.4"/></svg>Ver saldos y<br>movimientos</button>
+            <button class="tx" type="button"><span class="bre">Bre-B</span>Tus<br>llaves</button>
+            <button class="tx" type="button"><svg viewBox="0 0 40 40"><path d="M34 7 6 17l10 4 3 11 15-25z"/><path d="M16 21 34 7"/><path d="M12 6.500v6M10 8.200c.5-1 4-1 4 .3 0 1.700-4 .9-4 2.600 0 1.300 3.600 1.200 4 .1" stroke-width="1.200"/></svg>Transferir<br>plata</button>
+            <button class="tx" type="button"><svg viewBox="0 0 40 40"><rect x="5" y="9" width="30" height="20" rx="3"/><rect x="9" y="14" width="12" height="3" rx="1.500"/><path d="M9 22h6M9 25h4"/><path d="M5 33h30" opacity=".4"/></svg>Pagar tarjetas<br>y créditos</button>
+            <button class="tx" type="button"><svg viewBox="0 0 40 40"><path d="M12 6h12l5 5v22H12z"/><path d="M17 17h8M17 22h8M17 27h5"/></svg>Pagar<br>facturas</button>
+          </div>
+
+          <h2 class="sec">Más opciones</h2>
+          <div class="grid-card">
+            <button class="opt" type="button"><span class="dot c1"><svg viewBox="0 0 46 46"><rect x="6" y="9" width="28" height="19" rx="2.500"/><path d="M3 32h34"/><rect x="26" y="17" width="13" height="22" rx="3"/><path d="M31 35h3"/></svg></span>Sucursal<br>Virtual<br>Personas</button>
+            <button class="opt" type="button"><span class="dot c2"><svg viewBox="0 0 46 46"><circle cx="21" cy="25" r="15"/><circle cx="21" cy="25" r="9"/><circle cx="21" cy="25" r="3"/><path d="M21 25 36 10M33 8v5h5"/></svg></span>Organiza tu<br>plata</button>
+            <button class="opt" type="button"><span class="dot c3"><svg viewBox="0 0 46 46"><path d="M7 21 23 7l16 14"/><path d="M11 18v21h24V18"/><rect x="19" y="26" width="8" height="13"/></svg></span>Hogar y<br>servicios</button>
+            <button class="opt" type="button"><span class="dot c4"><svg viewBox="0 0 46 46"><path d="M9 28l3-10c.5-1.700 2-3 3.800-3h14.400c1.800 0 3.300 1.300 3.800 3l3 10"/><rect x="6" y="28" width="34" height="9" rx="3"/><circle cx="13" cy="32.500" r="1.600"/><circle cx="33" cy="32.500" r="1.600"/><path d="M11 37v3M35 37v3"/></svg></span>Transporte</button>
+            <button class="opt" type="button"><span class="dot c5"><svg viewBox="0 0 46 46"><path d="m23 6 5 11 12 1.300-9 8.200 2.600 11.800L23 32l-10.600 6.300L15 26.500 6 18.300 18 17z"/></svg></span>Beneficios y<br>compras</button>
+            <button class="opt" type="button"><span class="dot c6"><svg viewBox="0 0 46 46"><path d="M10 6h16l8 8v22H10z"/><path d="M26 6v8h8"/><path d="M16 22h12M16 28h12"/></svg></span>Trámites y<br>solicitudes</button>
+          </div>
+        </div>
+
+        <button class="qr" type="button" aria-label="Escanear QR">
+          <svg viewBox="0 0 34 34"><path d="M5 12V7a2 2 0 0 1 2-2h5M22 5h5a2 2 0 0 1 2 2v5M29 22v5a2 2 0 0 1-2 2h-5M12 29H7a2 2 0 0 1-2-2v-5"/><rect x="10.500" y="10.500" width="5" height="5" rx=".8"/><rect x="18.500" y="10.500" width="5" height="5" rx=".8"/><rect x="10.500" y="18.500" width="5" height="5" rx=".8"/><path d="M19 19h4.500v4.500H19z"/></svg>
+        </button>
+
+        <nav class="nav" aria-label="Principal">
+          <button class="active" type="button"><svg viewBox="0 0 34 34"><path d="M5 16 17 5l12 11"/><path d="M8 14v15h18V14"/><path d="M14 29v-8h6v8"/></svg>Inicio</button>
+          <button type="button"><svg viewBox="0 0 34 34"><rect x="4" y="8" width="26" height="18" rx="3"/><rect x="8" y="12.500" width="10" height="3" rx="1.500"/><path d="M8 19.500h6M8 22.500h4"/></svg>Transacciones</button>
+          <button type="button"><svg viewBox="0 0 34 34"><rect x="5" y="5" width="10" height="10" rx="1.500"/><rect x="19" y="5" width="10" height="10" rx="1.500"/><rect x="5" y="19" width="10" height="10" rx="1.500"/><rect x="19" y="19" width="10" height="10" rx="1.500"/></svg>Explorar</button>
+          <button type="button"><svg viewBox="0 0 34 34"><path d="M8 5h13l6 6v18H8z"/><path d="M21 5v6h6"/><path d="M13 17h9M13 22h9"/></svg>Trámites y<br>solicitudes</button>
+          <button type="button"><svg viewBox="0 0 34 34"><circle cx="17" cy="17" r="4.500"/><path d="M17 4.500v4M17 25.500v4M4.500 17h4M25.500 17h4M8.200 8.200l2.800 2.800M23 23l2.800 2.800M25.800 8.200 23 11M11 23l-2.800 2.800"/></svg>Ajustes</button>
+        </nav>
+      </main>
+
+      <!-- ===== SPLASH ===== -->
+      <section class="splash" id="splash" aria-label="Cargando">
+        <svg class="swoosh" viewBox="0 0 368 728" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <path class="dash s-cyan"    pathLength="100" stroke="#2e3c43" stroke-width="17" d="M12 60 C 40 68, 74 86, 100 114"/>
+          <path class="dash s-orange1" pathLength="100" stroke="#f2643a" stroke-width="26" d="M-10 30 C 12 36, 28 50, 36 74"/>
+          <path class="dash s-yellow"  pathLength="100" stroke="#fdda24" stroke-width="22" d="M374 340 C 366 440, 332 510, 286 542"/>
+          <path class="dash s-orange2" pathLength="100" stroke="#f2643a" stroke-width="26" d="M356 474 L 346 494"/>
+          <path class="dash s-dot"     pathLength="100" stroke="#4bc6e2" stroke-width="17" d="M270 562 L 271 562.500" style="stroke-dasharray:0.01 400"/>
+        </svg>
+
+        <span class="logo"><svg viewBox="0 0 28 28" aria-hidden="true"><path d="M3 5.500c0-1.100.9-2 2-2h18.300c1.200 0 2 1 1.600 2.100l-.4 1c-.3.800-1 1.300-1.900 1.300H5c-1.100 0-2-.9-2-2zM3 12.200c0-1.100.9-2 2-2h18.300c1.200 0 2 1 1.600 2.100l-.4 1c-.3.800-1 1.300-1.900 1.300H5c-1.100 0-2-.9-2-2zM3 18.900c0-1.100.9-2 2-2h18.300c1.200 0 2 1 1.600 2.100l-.4 1c-.3.800-1 1.300-1.900 1.300H5c-1.100 0-2-.9-2-2z" transform="translate(0 1.500) skewX(-8)"/></svg>Bancolombia</span>
+        <div class="pct" id="pct">0%</div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var splash = document.getElementById('splash');
+  var home = document.getElementById('home');
+  var pct = document.getElementById('pct');
+
+  /* Hora real en la barra de estado y saludo según la hora */
+  var now = new Date(), h = now.getHours();
+  document.getElementById('clock').textContent = (h % 12 || 12) + ':' + String(now.getMinutes()).padStart(2, '0');
+  document.getElementById('hello').textContent = h < 12 ? 'Buenos días' : h < 19 ? 'Buenas tardes' : 'Buenas noches';
+
+  /* Contador de carga: arranca lento, acelera y se asienta al final */
+  var DURATION = 2700, START = 450;
+  var t0 = null;
+  function ease(t) { return t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; }
+  function tick(ts) {
+    if (t0 === null) t0 = ts;
+    var t = Math.min(Math.max((ts - t0 - START) / DURATION, 0), 1);
+    pct.textContent = Math.round(ease(t) * 100) + '%';
+    if (t < 1) requestAnimationFrame(tick); else finish();
+  }
+  function finish() {
+    setTimeout(function () {
+      home.classList.add('in');
+      splash.classList.add('out');
+      drawArc();
+      setTimeout(function () { splash.style.display = 'none'; }, 700);
+    }, 250);
+  }
+  requestAnimationFrame(tick);
+
+  /* Arco de colores decorativo de la pantalla de inicio */
+  function drawArc() {
+    ['arcC', 'arcY', 'arcO'].forEach(function (id, i) {
+      var p = document.getElementById(id);
+      p.style.strokeDasharray = '100 100';
+      p.style.strokeDashoffset = '100';
+      p.style.transition = 'stroke-dashoffset .9s cubic-bezier(.3,.6,.2,1) ' + (.25 + i * .12) + 's';
+      requestAnimationFrame(function () { requestAnimationFrame(function () { p.style.strokeDashoffset = '0'; }); });
+    });
+  }
+
+  /* Clave dinámica: se renueva cada 30 s con anillo de cuenta regresiva */
+  var code = document.getElementById('code'), timer = document.getElementById('timer');
+  var CIRC = 150.8, PERIOD = 30000, born = Date.now();
+  function newCode() {
+    var n = String(Math.floor(Math.random() * 1000000)).padStart(6, '0');
+    code.textContent = n.slice(0, 3) + ' ' + n.slice(3);
+  }
+  setInterval(function () {
+    var e = (Date.now() - born) % PERIOD;
+    if (e < 200 && Date.now() - born > 1000) newCode();
+    timer.style.strokeDashoffset = String(CIRC * (e / PERIOD));
+  }, 200);
+
+  /* Navegación inferior */
+  var btns = document.querySelectorAll('.nav button');
+  btns.forEach(function (b) {
+    b.addEventListener('click', function () {
+      btns.forEach(function (x) { x.classList.remove('active'); });
+      b.classList.add('active');
+    });
+  });
+})();
+</script>
+</body>
+</html>
